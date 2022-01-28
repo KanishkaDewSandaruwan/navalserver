@@ -5,6 +5,7 @@ const cors = require('cors');
 const path = require('path');
 
 const multer = require('multer');
+const { error } = require('console');
 
 const pdfStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -38,6 +39,9 @@ const db = mysql.createConnection({
     database: 'naval',
 });
 
+
+//Book Database
+
 app.get('/book/view', (req, res) => {
     db.query("SELECT * FROM book", (err, result) => {
         if (err) {
@@ -62,9 +66,6 @@ app.post('/book/newbook', upload.single('file'), (req, res) => {
     const price = body.price;
     const imagefile = req.file.filename;
     const pdffile = body.pdf;
-
-    console.log(imagefile)
-    console.log(pdffile)
 
     let date_ob = new Date();
 
@@ -149,16 +150,68 @@ app.get('/author/view', (req, res) => {
     });
 });
 
+app.post('/author/authorLogin', (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    console.log(email + ' ' + password)
+
+    db.query("SELECT * FROM author WHERE email = ? AND password = ? ", [email, password], (err, result) => {
+        if (err) {
+            res.send({err: err});
+        }
+
+        if (result.length > 0) {
+            res.send(result);
+            console.log(result)
+        } else {
+            res.send({message:"Email or Password is Wrong"})
+        }
+
+    });
+});
+
 app.post('/author/create', (req, res) => {
     const name = req.body.name;
     const description = req.body.description;
+    const address = req.body.address;
+    const phone = req.body.phone;
+    const gender = req.body.gender;
+    const accept = 'No';
+    const password = req.body.password;
     const email = req.body.email;
 
-    db.query("INSERT INTO author(name, description, email) VALUES(?,?,?)", [name, description, email], (err, result) => {
+    let date_ob = new Date();
+
+    // current date
+    let date = ("0" + date_ob.getDate()).slice(-2);
+    let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
+    let year = date_ob.getFullYear();
+    let hours = date_ob.getHours();
+    let minutes = date_ob.getMinutes();
+    let seconds = date_ob.getSeconds();
+
+    const cdate = year + "-" + month + "-" + date + " " + hours + ":" + minutes + ":" + seconds;
+
+    db.query("INSERT INTO author(name, description,address, phone, gender, email, password, cdate, accept) VALUES(?,?,?,?,?,?,?,?,?)", [name, description, address, phone, gender, email, password, cdate, accept], (err, result) => {
         if (err) {
             console.log(err);
         } else {
             res.send("Author Added Success!");
+        }
+    })
+})
+
+app.put('/author/accept', (req, res) => {
+
+    const accept = 'Yes';
+    const email = req.body.email;
+
+    db.query("UPDATE author SET  accept = ? WHERE email = ? ", [accept, email], (err, result) => {
+        if (err) {
+            console.log(err);
+        } else {
+            res.send("Your Registration is Success!");
         }
     })
 })
