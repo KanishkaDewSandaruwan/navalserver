@@ -535,7 +535,7 @@ app.delete('/category/delete/:cat_id', (req, res) => {
 })
 
 app.get('/category/view', (req, res) => {
-    db.query("SELECT DISTINCT cat_name, cat_image, cat_id  FROM category join book on book.category = category.cat_id WHERE accept_book = 'Accepted' ", (err, result) => {
+    db.query("SELECT DISTINCT cat_name, cat_image, cat_id  FROM category", (err, result) => {
 
 
         if (err) {
@@ -1146,7 +1146,7 @@ app.delete('/contact/delete/:email', (req, res) => {
 app.get('/payment/view/:customerEmail', (req, res) => {
     const customerEmail = req.params.customerEmail;
 
-    db.query("SELECT * FROM payment join customer on payment.p_customer_id = customer.email WHERE p_customer_id = ? ", customerEmail, (err, result) => {
+    db.query("SELECT * FROM payment join customer on payment.p_customer_id = customer.email WHERE p_customer_id = ? GROUP BY payment_id ", customerEmail, (err, result) => {
         if (err) {
             console.log(err);
         } else {
